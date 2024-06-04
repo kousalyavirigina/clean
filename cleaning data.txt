@@ -1,0 +1,39 @@
+import pandas as pd
+df = pd.read_csv("C:/Users/91905/Downloads/AB_NYC_2019.csv.zip")
+print(df.info())
+print(df.describe())
+
+
+missing_data = df.isnull().sum()
+print(missing_data)
+df = df.dropna()
+
+duplicates = df.duplicated().sum()
+print(f"Number of duplicate rows: {duplicates}")
+# Remove duplicates
+df = df.drop_duplicates()
+
+
+df['price'] = pd.to_numeric(df['price'], errors='coerce')
+df = df.dropna(subset=['price'])
+# Convert any categorical columns to lowercase or proper format
+df['name'] = df['name'].str.lower()
+df['host_name'] = df['host_name'].str.lower()
+df['neighbourhood_group'] = df['neighbourhood_group'].str.lower()
+df['neighbourhood'] = df['neighbourhood'].str.lower()
+
+Q1 = df['price'].quantile(0.25)
+Q3 = df['price'].quantile(0.75)
+IQR = Q3 - Q1
+lower_bound = Q1 - 1.5 * IQR
+upper_bound = Q3 + 1.5 * IQR
+
+# Filter out outliers
+df = df[(df['price'] >= lower_bound) & (df['price'] <= upper_bound)]
+
+# Print final structure and some rows of the cleaned dataset
+print(df.info())
+print(df.head())
+
+# Save the cleaned dataset
+df.to_csv('AB_NYC_2019_cleaned.csv', index=False)
